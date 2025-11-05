@@ -2,14 +2,14 @@
 session_start();
 
 // --- Récupération des cartes ---
-$all_cards = glob("cards/*.svg"); 
-$all_cards = array_filter($all_cards, function($c) {
-    return basename($c) !== "back.svg";
+$all_cards = glob("cards/*.svg"); // Sélectionne toutes les fichiers svg dans le dossier cards
+$all_cards = array_filter($all_cards, function($c) { // Parcours les fichiers de all_cards
+    return basename($c) !== "back.svg"; // Si le fichier est back.svg il est supprimé de la sélection
 });
-$all_cards = array_values(array_map('basename', $all_cards));
+$all_cards = array_values(array_map('basename', $all_cards)); // Remet en ordre les numéros des cartes (basename = prends juste le nom du fichier, pas le chemin)
 
 // --- Choix avant partie ---
-if (!isset($_SESSION['cards']) && !isset($_POST['nb_cards'])) {
+if (!isset($_SESSION['cards']) && !isset($_POST['nb_cards'])) { //Si les cartes pour la session et le nbr de cartes sont remplis, on peut continuer
     ?>
     <!doctype html>
     <html lang="fr">
@@ -28,9 +28,9 @@ if (!isset($_SESSION['cards']) && !isset($_POST['nb_cards'])) {
                 <div>
                     <h4>Nombre de cartes :</h4>
                     <div class="d-flex flex-wrap gap-3 justify-content-center">
-                        <?php foreach ([6, 12, 24, 48, 66] as $n): ?>
-                            <input type="radio" class="btn-check" name="nb_cards" id="cards<?= $n ?>" value="<?= $n ?>" required>
-                            <label class="btn btn-outline-primary btn-lg" for="cards<?= $n ?>"><?= $n ?> cartes</label>
+                        <?php foreach ([6, 12, 24, 48, 66] as $n): ?> <!-- On sépare le tableau de nbr en des nbr individuels -->
+                            <input type="radio" class="btn-check" name="nb_cards" id="cards<?= $n ?>" value="<?= $n ?>" required><!-- L'id et la value sont le nbr sélectionné par le joueur -->
+                            <label class="btn btn-outline-primary btn-lg" for="cards<?= $n ?>"><?= $n ?> cartes</label><!-- Le for est le nbr de cartes sélectionné par le joueur, même chose pour $n cartes -->
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -61,30 +61,30 @@ if (!isset($_SESSION['cards']) && !isset($_POST['nb_cards'])) {
 }
 
 // --- Initialisation ---
-if (!isset($_SESSION['cards'])) {
-    $nb_cards = (int)$_POST['nb_cards'];
-    $nb_pairs = intdiv($nb_cards, 2);
+if (!isset($_SESSION['cards'])) { // Si les cartes sont sélectionnés pour la session en cours
+    $nb_cards = (int)$_POST['nb_cards']; // On définit le nbr de cartes sélectionner par le joueur pour les convertir en nombre entiers
+    $nb_pairs = intdiv($nb_cards, 2); // On divise le nbr de cartes sélectionnés par 2
 
-    shuffle($all_cards);
-    $selected = array_slice($all_cards, 0, $nb_pairs);
+    shuffle($all_cards); // Mélange les cartes
+    $selected = array_slice($all_cards, 0, $nb_pairs); // Extrait une partie de toutes les cartes en paires
 
     $cards = [];
     foreach ($selected as $c) {
         $cards[] = $c;
         $cards[] = $c;
-    }
-    shuffle($cards);
+    } // On rends les cartes individuelles
+    shuffle($cards); // Sélectionne les cartes au hasard
 
-    $_SESSION['cards'] = $cards;
-    $_SESSION['revealed'] = [];
-    $_SESSION['selection'] = [];
-    $_SESSION['moves'] = 0;       
-    $_SESSION['timed'] = isset($_POST['timed']) ? (int)$_POST['timed'] : 1;
-    $_SESSION['nb_cards'] = $nb_cards;
+    $_SESSION['cards'] = $cards; // Les cartes qui ont été sélectionnées aléatoirement
+    $_SESSION['revealed'] = []; // Cartes révélées
+    $_SESSION['selection'] = []; // Cartes sélectionnées
+    $_SESSION['moves'] = 0;       // Actions (Départ à 0)
+    $_SESSION['timed'] = isset($_POST['timed']) ? (int)$_POST['timed'] : 1; // Si l'option "timed" est sélectionner 
+    $_SESSION['nb_cards'] = $nb_cards; // Nbr de cartes sélectionnées pour le jeu
 
     if ($_SESSION['timed'] === 1) {
         $_SESSION['start_time'] = time(); 
-    }
+    } // Si le joueur veut faire une partie chronométré le chronomètre est mis en place
 }
 
 // --- Gestion clic ---
